@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 import logging
 
-import anthropic
-
 from .fetch import Article
 
 log = logging.getLogger(__name__)
@@ -127,6 +125,8 @@ QUIZ_TOOL = {
 
 class Summarizer:
     def __init__(self, model: str):
+        import anthropic  # API 방식에서만 필요
+
         self.client = anthropic.Anthropic()  # ANTHROPIC_API_KEY 환경변수 사용
         self.model = model
 

@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 from . import config
-from .enrich import archive_dir, build_briefing, link_related, load_past, update_dates, update_glossary
+from .edition import save_edition
 from .dedup import cluster, group_category, merge_groups, rank, representative
 from .fetch import fetch_all, fetch_body
 from .summarize import Summarizer, fallback_card
@@ -99,40 +99,13 @@ def main() -> int:
     order = {c: i for i, c in enumerate(config.CATEGORIES)}
     cards.sort(key=lambda c: (order.get(c["category"], 99), -len(c["sources"])))
 
-    save_edition(cards, len(articles), summarizer, datetime.now(KST))
-    return 0
-
-
-def save_edition(cards: list[dict], collected: int, summarizer: Summarizer | None, now: datetime) -> dict:
-    """카드에 브리핑·퀴즈·지난 이야기를 덧붙여 저장하고, 용어 사전·날짜 목록을 갱신합니다."""
-    out_dir = config.OUTPUT_DIR
-    today = now.strftime("%Y-%m-%d")
-    os.makedirs(archive_dir(out_dir), exist_ok=True)
-
-    link_related(cards, load_past(out_dir, today))
-    briefing = build_briefing(cards)
     quiz = []
     if summarizer:
         top = sorted(cards, key=lambda c: len(c["sources"]), reverse=True)[:8]
         quiz = summarizer.make_quiz(top)
+    save_edition(cards, len(articles), datetime.now(KST), quiz=quiz)
+    return 0
 
-    payload = {
-        "site": "쉽게말해",
-        "date": today,
-        "generated_at": now.isoformat(timespec="minutes"),
-        "categories": [{"id": k, "name": v} for k, v in config.CATEGORIES.items()],
-        "stats": {"collected": collected, "cards": len(cards)},
-        "briefing": briefing,
-        "quiz": quiz,
-        "cards": cards,
-    }
-    for path in (os.path.join(out_dir, "news.json"), os.path.join(archive_dir(out_dir), f"{today}.json")):
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=1)
-    n_terms = update_glossary(out_dir, cards, today)
-    update_dates(out_dir)
-    log.info("저장 완료: 카드 %d장, 퀴즈 %d문제, 용어 %d개", len(cards), len(quiz), n_terms)
-    return payload
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -14,10 +14,16 @@
 - **보기 모드**(둘 다 / 쉬운 말만 / 요약만), **글자 크기**, **다크 모드** — 브라우저에 기억됨
 - **아침 알림**: 텔레그램·이메일로 3줄 브리핑 발송 (설정한 것만)
 
+## 운영 방식 (API 비용 없음)
+
 ```
-RSS 수집(언론사 6곳 × 5분야) → 중복 묶기(글자 유사도 + AI 2차 확인) → 많이 보도된 순 정렬
-→ Claude로 요약·쉬운 요약·키워드·용어 풀이 → docs/data/news.json → GitHub Pages
+매일 아침 Claude 예약 작업 → 언론사 RSS 읽기 → 같은 사건 묶기 → 카드·퀴즈 작성
+→ python -m scraper.build 로 발행(지난 이야기·3줄·용어 사전 자동) → docs/data 커밋 → GitHub Pages
 ```
+
+- 작업 지침은 [`ops/morning-edition.md`](ops/morning-edition.md). 예약 작업은 이 문서를 그대로 따릅니다.
+- 새 뉴스가 올라오면 `.github/workflows/notify.yml` 이 아침 알림을 보냅니다(설정한 경우만).
+- `scraper/run.py` + `.github/workflows/api-mode.yml` 은 Claude API 키를 쓰는 예비 방식(수동 실행)입니다.
 
 ## 폴더 구조
 
@@ -29,22 +35,20 @@ RSS 수집(언론사 6곳 × 5분야) → 중복 묶기(글자 유사도 + AI 2�
 | `scraper/summarize.py` | Claude API 프롬프트(요약/쉬운 요약/키워드) |
 | `scraper/enrich.py` | 지난 이야기 연결, 3줄 브리핑, 용어 사전, 날짜 목록 |
 | `scraper/notify.py` | 텔레그램·이메일 아침 알림 |
-| `scraper/run.py` | 전체 실행 진입점 |
+| `scraper/build.py` | Claude가 쓴 카드 JSON을 검사·발행 (기본 방식) |
+| `scraper/edition.py` | 한 날짜치 저장 공통 로직 |
+| `scraper/run.py` | RSS+API로 직접 수집·요약 (예비 방식) |
+| `ops/morning-edition.md` | 매일 아침 예약 작업 지침 |
 | `docs/` | 웹사이트 (index.html, style.css, app.js) |
 | `docs/data/` | news.json(최신), archive/날짜.json, dates.json, glossary.json |
-| `.github/workflows/daily.yml` | 매일 06:00 KST 자동 실행 |
+| `.github/workflows/notify.yml` | 새 뉴스 발행 시 알림 |
+| `.github/workflows/api-mode.yml` | (선택) API 방식 수동 실행 |
 
-## 배포하기 (무료, 약 10분)
+## 배포하기
 
-1. GitHub에 새 저장소를 만들고 이 폴더 내용을 그대로 올립니다.
-2. **Settings → Secrets and variables → Actions → New repository secret**
-   이름 `ANTHROPIC_API_KEY`, 값에 Claude API 키 (console.anthropic.com 에서 발급).
-3. **Settings → Pages** → Source: *Deploy from a branch*, Branch: `main` / 폴더 `/docs` → Save.
-4. **Actions 탭 → "매일 아침 뉴스 업데이트" → Run workflow** 로 첫 실행.
-   몇 분 뒤 `https://<아이디>.github.io/<저장소>/` 에서 실제 뉴스가 보입니다.
-   이후 매일 아침 6시에 자동으로 갱신돼요.
-
-> 처음 올린 `docs/data/news.json` 은 화면 확인용 예시 데이터입니다. 첫 실행 때 실제 뉴스로 덮어써집니다.
+1. 이 폴더 내용을 GitHub 저장소에 올립니다.
+2. **Settings → Pages** → Source: *Deploy from a branch*, Branch: `main` / 폴더 `/docs` → Save.
+3. Claude에서 매일 아침 예약 작업을 만듭니다(`ops/morning-edition.md` 를 따르도록). 첫 실행 전까지는 예시 데이터가 보이고, 첫 발행 때 자동으로 지워집니다.
 
 ## 아침 알림 설정 (선택)
 

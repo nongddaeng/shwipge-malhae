@@ -1,0 +1,35 @@
+name: 아침 알림 보내기
+
+# 새 뉴스(news.json)가 올라오면 텔레그램·이메일로 3줄 브리핑을 보냅니다.
+# 알림 설정(Secrets)이 하나도 없으면 아무것도 보내지 않고 끝나요.
+on:
+  push:
+    branches: [main]
+    paths: ["docs/data/news.json"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 사이트 반영 대기 후 알림
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          sleep 60
+          python -m scraper.notify
