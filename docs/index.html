@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>쉽게말해 — 오늘 아침 뉴스, 쉽게</title>
+  <meta name="description" content="매일 아침 경제·사회·정치·국제 뉴스를 모아 요약하고, 누구나 이해할 수 있게 쉽게 풀어드려요." />
+  <script>
+    // 깜빡임 없이 저장된 테마·글자 크기를 먼저 적용
+    try {
+      var t = localStorage.getItem("sm-theme"), f = localStorage.getItem("sm-fs");
+      if (!t && !document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+      if (t) document.documentElement.dataset.theme = t;
+      if (f) document.documentElement.dataset.fs = f;
+    } catch (e) {}
+  </script>
+  <link rel="preload" href="fonts/SeoulAlrim-ExtraBold.subset.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/Freesentation-4Regular.subset.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="mode-both">
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="brand" href="#all" aria-label="쉽게말해 처음으로">
+        <span class="brand-mark" aria-hidden="true">말</span>
+        <span class="brand-text">
+          <span class="brand-name">쉽게말해</span>
+          <span class="brand-tag">어려운 뉴스, 쉽게 말해 드려요</span>
+        </span>
+      </a>
+      <div class="tools">
+        <label class="date-pick">
+          <span class="sr-only">지난 날짜 보기</span>
+          <select id="date-select" aria-label="지난 날짜 보기"></select>
+        </label>
+        <details class="settings" id="settings">
+          <summary>보기 설정</summary>
+          <div class="settings-panel">
+            <div class="set-row">
+              <span>읽는 방식</span>
+              <div class="seg" role="group" aria-label="보기 모드">
+                <button type="button" data-mode="both" aria-pressed="true">둘 다</button>
+                <button type="button" data-mode="easy" aria-pressed="false">쉬운 말만</button>
+                <button type="button" data-mode="orig" aria-pressed="false">요약만</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <span>글자 크기</span>
+              <div class="seg" role="group" aria-label="글자 크기">
+                <button type="button" id="fs-down" aria-label="글자 작게">작게</button>
+                <button type="button" id="fs-up" aria-label="글자 크게">크게</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <span>화면</span>
+              <div class="seg" role="group" aria-label="화면 밝기">
+                <button type="button" data-theme-set="light">밝게</button>
+                <button type="button" data-theme-set="dark">어둡게</button>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div class="wrap"><p class="edition" id="edition">오늘 아침 뉴스를 불러오는 중…</p></div>
+  </header>
+
+  <nav class="lines" aria-label="분야">
+    <div class="wrap">
+      <div class="tabs" id="tabs" role="tablist"></div>
+    </div>
+  </nav>
+
+  <main class="wrap" id="main">
+    <div id="notices"></div>
+    <section id="view" aria-live="polite"></section>
+  </main>
+
+  <footer class="wrap colophon">
+    <p class="colo-name"><span class="brand-mark small" aria-hidden="true">말</span>쉽게말해</p>
+    <p>여러 언론사 기사를 AI로 요약합니다. 요약에는 실수가 있을 수 있으니, 중요한 내용은 각 기사 아래 출처의 원문에서 꼭 확인하세요.</p>
+    <p class="stamp" id="stamp"></p>
+    <p class="font-credit">글꼴: 서울알림체 © 서울특별시 (공공누리 제1유형) ·
+      <a href="https://freesentation.blog/" target="_blank" rel="noopener">프리젠테이션</a> © 이주임 (SIL OFL 1.1) ·
+      <a href="fonts/FONTS-LICENSE.txt" target="_blank" rel="noopener">라이선스 전문</a></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
